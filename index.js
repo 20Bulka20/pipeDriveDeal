@@ -10,63 +10,18 @@ require("dotenv").config();
 
 const addDealClient = new pipedrive.ApiClient();
 const addNotesToDealClient = new pipedrive.ApiClient();
-const updatePersonClient = new pipedrive.ApiClient();
+const addPersonClient = new pipedrive.ApiClient();
 addDealClient.authentications.api_key.apiKey = process.env.PIPEDRIVE_API_KEY;
-updatePersonClient.authentications.api_key.apiKey =
-  process.env.PIPEDRIVE_API_KEY;
+addPersonClient.authentications.api_key.apiKey = process.env.PIPEDRIVE_API_KEY;
 addNotesToDealClient.authentications.api_key.apiKey =
   process.env.PIPEDRIVE_API_KEY;
 
-async function addDeal() {
+async function addPerson() {
   try {
     console.log("Sending request...");
 
-    const api = new pipedrive.DealsApi(addDealClient);
+    const api = new pipedrive.PersonsApi(addPersonClient);
 
-    const data = {
-      title: "Deal from MVP calculator",
-      person_id: process.env.PERSON_EMAIL || "DealMVPID",
-      value: process.env.TOTAL_AMOUNT || "0",
-    };
-    const response = await api.addDeal(data);
-
-    if (response) {
-      addNoteToDeal(response);
-      updatePerson(response);
-    }
-
-    console.log("Deal was added successfully!", response);
-  } catch (err) {
-    const errorToLog = err.context?.body || err;
-
-    console.log("Adding failed", errorToLog);
-  }
-}
-async function addNoteToDeal(response) {
-  try {
-    console.log("Sending request...");
-
-    const api = new pipedrive.NotesApi(addNotesToDealClient);
-
-    const data = {
-      content: process.env.DATA_BY_STEPS_VALUES || "Step1 test",
-      deal_id: response.data.id,
-    };
-    const addNoteResponse = await api.addNote(data);
-
-    console.log("Notes was added successfully!", addNoteResponse);
-  } catch (err) {
-    const errorToLog = err.context?.body || err;
-
-    console.log("Adding failed", errorToLog);
-  }
-}
-async function updatePerson(response) {
-  try {
-    console.log("Sending updatePerson request...");
-
-    const api = new pipedrive.PersonsApi(updatePersonClient);
-    const PERSON_ID = response.data.person_id.value;
     const data = {
       name: process.env.PERSON_NAME || "Client Name Test",
       email: [
@@ -77,14 +32,64 @@ async function updatePerson(response) {
         },
       ],
     };
-    const updatePersonResponse = await api.updatePerson(PERSON_ID, data);
+    const response = await api.addPerson(data);
 
-    console.log("Person was updated successfully!", updatePersonResponse);
+    if (response) {
+      addLead(response);
+    }
+
+    console.log("Person was added successfully!", response);
   } catch (err) {
     const errorToLog = err.context?.body || err;
 
-    console.log("Person update failed", errorToLog);
+    console.log("Adding failed", errorToLog);
+  }
+}
+async function addLead(response) {
+  try {
+    console.log("Sending request...");
+
+    const api = new pipedrive.LeadsApi(addDealClient);
+
+    const data = {
+      title: "Deal from MVP calculator",
+      person_id: response.data.id,
+      value: {
+        amount: +process.env.TOTAL_AMOUNT || 0,
+        currency: "USD",
+      },
+    };
+    const leadResponse = await api.addLead(data);
+
+    if (leadResponse) {
+      addNoteToDeal(leadResponse);
+    }
+
+    console.log("Lead was added successfully!", leadResponse);
+  } catch (err) {
+    const errorToLog = err.context?.body || err;
+
+    console.log("Adding lead failed", errorToLog);
+  }
+}
+async function addNoteToDeal(response) {
+  try {
+    console.log("Sending request...");
+
+    const api = new pipedrive.NotesApi(addNotesToDealClient);
+
+    const data = {
+      content: process.env.DATA_BY_STEPS_VALUES || "Step1 test",
+      lead_id: response.data.id,
+    };
+    const addNoteResponse = await api.addNote(data);
+
+    console.log("Notes was added successfully!", addNoteResponse);
+  } catch (err) {
+    const errorToLog = err.context?.body || err;
+
+    console.log("Adding note failed", errorToLog);
   }
 }
 
-addDeal();
+addPerson();
