@@ -3,6 +3,11 @@ const app = express();
 const pipedrive = require("pipedrive");
 require("dotenv").config();
 
+//PERSON_EMAIL
+//TOTAL_AMOUNT
+//PERSON_NAME
+//DATA_BY_STEPS_VALUES
+
 const addDealClient = new pipedrive.ApiClient();
 const addNotesToDealClient = new pipedrive.ApiClient();
 const updatePersonClient = new pipedrive.ApiClient();
