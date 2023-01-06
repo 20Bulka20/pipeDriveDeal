@@ -73,7 +73,7 @@ async function updatePerson(response) {
         {
           value: process.env.PERSON_EMAIL || "test@test.com",
           primary: true,
-          label: "test",
+          label: "from MVP Calc",
         },
       ],
     };
