@@ -52,7 +52,7 @@ async function addLead(response) {
     const api = new pipedrive.LeadsApi(addDealClient);
 
     const data = {
-      title: "Deal from MVP calculator",
+      title: `${process.env.PERSON_EMAIL} MVP calc`,
       person_id: response.data.id,
       value: {
         amount: +process.env.TOTAL_AMOUNT || 0,
